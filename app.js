@@ -13,10 +13,10 @@ var methodOverride = require("method-override"),
 var campgroundRoutes = require("./routes/campgrounds"),
     commentRoutes    = require("./routes/comments"),
     authRoutes       = require("./routes/index");
-    
 
 mongoose.Promise = global.Promise;
-mongoose.connect("mongodb://localhost/yelp_camp", { useMongoClient: true });
+//mongoose.connect("mongodb://localhost/yelp_camp", { useMongoClient: true });
+mongoose.connect("mongodb://admin:admin@ds229458.mlab.com:29458/yelpcamp", { useMongoClient: true });
 
 app.set("view engine", "ejs");
 
