@@ -16,7 +16,9 @@ var campgroundRoutes = require("./routes/campgrounds"),
 
 mongoose.Promise = global.Promise;
 //mongoose.connect("mongodb://localhost/yelp_camp", { useMongoClient: true });
-mongoose.connect("mongodb://admin:admin@ds229458.mlab.com:29458/yelpcamp", { useMongoClient: true });
+mongoose.connect(process.env.DATABASEURL, { useMongoClient: true });
+
+console.log(process.env.DATABASEURL);
 
 app.set("view engine", "ejs");
 
