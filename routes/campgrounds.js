@@ -1,6 +1,7 @@
 var express = require("express"),
     router  = express.Router(),
-    middleware =require("../middleware"),
+    middleware = require("../middleware"),
+    geocoder = require("geocoder"),
     Campground = require("../models/campground");
 
 // --------------------
@@ -15,7 +16,7 @@ router.get("/", function(req, res) {
             console.log(err);
         }
         else {
-            res.render("campgrounds/index", { campgrounds: allCampgrounds});
+            res.render("campgrounds/index", { campgrounds: allCampgrounds, page: 'campgrounds' });
         }
     });
 });
@@ -35,14 +36,27 @@ router.post("/", middleware.isLoggedIn, function(req, res) {
       id: req.user._id,
       username: req.user.username
     };
-    var newCampground = { name: name, image: image, description: desc, author: author, price: price};
-    // Create a new campground and save to DB
-    Campground.create(newCampground, function(err, newlyCreate) {
+    var cost = req.body.cost;
+    
+    geocoder.geocode(req.body.location, function(err, data) {
+        var lat = data.results[0].geometry.location.lat;
+        var lng = data.results[0].geometry.location.lng;
+        var location = data.results[0].formatted_address;
+        var newCampground = { name: name, image: image, description: desc, author: author, price: price, location: location, lat: lat, lng: lng };
+        
         if (err) {
             console.log(err);
-        }
-        else {
-            res.redirect("/campgrounds");
+        } else {
+            Campground.create(newCampground, function(err, newlyCreate) {
+               if (err) {
+                   console.log(err);
+               } else {
+                   console.log(newlyCreate);
+                   console.log("------------");
+                   console.log(data.results[0].geometry);
+                   res.redirect("/campgrounds");
+               }
+            });
         }
     });
 });
@@ -73,13 +87,34 @@ router.get("/:id/edit", middleware.checkCampgroundOwnership, function(req, res) 
 
 // UPDATE - PUT METHOD
 router.put("/:id", middleware.checkCampgroundOwnership, function(req, res) {
-   Campground.findByIdAndUpdate(req.params.id, req.body.campground, function(err, updatedCampground) {
-        if (err) {
-            res.redirect("/campgrounds");
-        } else {
-            res.redirect("/campgrounds/" + req.params.id);
-        }
-   }); 
+    geocoder.geocode(req.body.location, function(err, data) {
+       var lat = data.results[0].geometry.location.lat;
+       var lng = data.results[0].geometry.location.lng;
+       var location = data.results[0].formatted_address;
+       var newData = { 
+           name: req.body.name, 
+           image: req.body.image, 
+           description: req.body.description, 
+           cost: req.body.cost, 
+           location: location, 
+           lat: lat, 
+           lng: lng
+       };
+       
+       if (err) {
+           console.log(err);
+       } else {
+           Campground.findByIdAndUpdate(req.params.id, {$set: newData}, function(err, campground) {
+               if (err) {
+                   req.flash("error", err.message);
+                   res.redirect("back");
+               } else {
+                   req.flash("success", "Successfully Updated!");
+                   res.redirect("/campgrounds/" + campground._id);
+               }
+           });
+       }
+    });
 });
 
 // DESTROY ROUTE - DELETE /campgrounds/:id

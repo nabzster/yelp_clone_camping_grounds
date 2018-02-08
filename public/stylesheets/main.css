@@ -1,3 +1,12 @@
+.h1cred {
+    text-align: center;
+}
+
+.credentials {
+    width: 30%;
+    margin: 25px auto;
+}
+
 .thumbnail img {
     width: 100%;
 }
@@ -8,4 +17,9 @@
 
 .delete-form {
     display: inline;
+}
+
+#map {
+    height: 400px;
+    width: 100%;
 }
