@@ -36,7 +36,6 @@ router.post("/", middleware.isLoggedIn, function(req, res) {
       id: req.user._id,
       username: req.user.username
     };
-    var cost = req.body.cost;
     
     geocoder.geocode(req.body.location, function(err, data) {
         var lat = data.results[0].geometry.location.lat;
